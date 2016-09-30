@@ -27,6 +27,7 @@ class ViewController: UIViewController {
     //MARK: UI Elements
     @IBOutlet weak var stepsSlider: UISlider!
     @IBOutlet weak var stepsLabel: UILabel!
+//    @IBOutlet weak var isWalking: UILabel!
     @IBOutlet weak var isWalking: UILabel!
     
     
@@ -39,7 +40,7 @@ class ViewController: UIViewController {
         self.totalSteps = 0.0
         self.startActivityMonitoring()
         self.startPedometerMonitoring()
-        self.startMotionUpdates()
+//        self.startMotionUpdates()
     }
 
     override func didReceiveMemoryWarning() {
@@ -79,17 +80,53 @@ class ViewController: UIViewController {
         // unwrap the activity and disp
         if let unwrappedActivity = activity {
             DispatchQueue.main.async{
-                self.isWalking.text = "Walking: \(unwrappedActivity.walking)\n Still: \(unwrappedActivity.stationary)"
+
+                if(unwrappedActivity.walking){
+                    self.isWalking.text = "Walking"
+                    
+                } else if (unwrappedActivity.running){
+                    self.isWalking.text = "Running"
+                } else if (unwrappedActivity.cycling){
+                    self.isWalking.text = "Cycling"
+                } else if (unwrappedActivity.unknown){
+                    self.isWalking.text = "Unknown"
+                } else if (unwrappedActivity.automotive){
+                    if(unwrappedActivity.stationary){
+                        self.isWalking.text = "Sitting in the Car"
+                    } else {
+                        self.isWalking.text = "Driving"
+                    }
+                } else if (unwrappedActivity.stationary){
+                    self.isWalking.text = "Still"
+                }
             }
         }
     }
     
     // MARK: Pedometer Functions
     func startPedometerMonitoring(){
+        
         //separate out the handler for better readability
-        if CMPedometer.isStepCountingAvailable(){
-            pedometer.startUpdates(from: Date(),
-                                                    withHandler: self.handlePedometer as! CMPedometerHandler)
+        var cal = Calendar.current
+        var comps = cal.dateComponents([.year, .month, .day, .hour, .minute, .second], from: Date())
+        comps.hour = 0
+        comps.minute = 0
+        comps.second = 0
+        let timeZone = TimeZone.current
+        cal.timeZone = timeZone
+        
+        let midnightOfToday = cal.date(from: comps)!
+        
+        if(CMPedometer.isStepCountingAvailable()){
+            
+            self.pedometer.startUpdates(from: midnightOfToday) { (data: CMPedometerData?, error) -> Void in
+                DispatchQueue.main.async(execute: { () -> Void in
+                    if(error == nil){
+                        print("\(data!.numberOfSteps)")
+                        self.stepsLabel.text = "\(data!.numberOfSteps)"
+                    }
+                })
+            }
         }
     }
     
