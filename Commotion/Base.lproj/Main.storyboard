@@ -216,13 +216,13 @@
                         <subviews>
                             <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" minValue="0.0" maxValue="100" translatesAutoresizingMaskIntoConstraints="NO" id="Z1u-hz-r1E"/>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="y4k-Fy-Nyf">
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="60"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You Are:" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KYq-39-foA" userLabel="Label">
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="94" id="Uj2-Sv-20L"/>
+                                    <constraint firstAttribute="width" constant="94" id="niW-rs-BC9"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="24"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -236,15 +236,18 @@
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="5VX-02-YSP" firstAttribute="top" secondItem="KYq-39-foA" secondAttribute="bottom" constant="8" symbolic="YES" id="Eh1-ad-Ml5"/>
-                            <constraint firstItem="y4k-Fy-Nyf" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="236" id="FAq-Jv-lBw"/>
-                            <constraint firstItem="y4k-Fy-Nyf" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Hv1-an-gF3"/>
-                            <constraint firstItem="Z1u-hz-r1E" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="4" id="RAV-hw-ZSS"/>
-                            <constraint firstItem="Z1u-hz-r1E" firstAttribute="top" secondItem="y4k-Fy-Nyf" secondAttribute="bottom" constant="8" symbolic="YES" id="UiM-jx-nOw"/>
-                            <constraint firstItem="y4k-Fy-Nyf" firstAttribute="centerX" secondItem="KYq-39-foA" secondAttribute="centerX" id="Wsm-hx-5XG"/>
-                            <constraint firstItem="Z1u-hz-r1E" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="cZ4-A6-M4M"/>
-                            <constraint firstItem="KYq-39-foA" firstAttribute="top" secondItem="Z1u-hz-r1E" secondAttribute="bottom" constant="8" symbolic="YES" id="jhf-aH-43M"/>
-                            <constraint firstItem="KYq-39-foA" firstAttribute="centerX" secondItem="5VX-02-YSP" secondAttribute="centerX" id="xiX-F4-dyF"/>
+                            <constraint firstItem="Z1u-hz-r1E" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="4fG-CE-OOi"/>
+                            <constraint firstItem="y4k-Fy-Nyf" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="97" id="4kw-tA-0iw"/>
+                            <constraint firstItem="KYq-39-foA" firstAttribute="centerX" secondItem="5VX-02-YSP" secondAttribute="centerX" id="5LT-Uu-anY"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="5VX-02-YSP" secondAttribute="bottom" constant="253" id="5Ni-Cl-Z61"/>
+                            <constraint firstItem="KYq-39-foA" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="8Ps-ZV-ykE"/>
+                            <constraint firstItem="y4k-Fy-Nyf" firstAttribute="centerX" secondItem="KYq-39-foA" secondAttribute="centerX" id="9LW-3C-VNq"/>
+                            <constraint firstItem="5VX-02-YSP" firstAttribute="top" secondItem="KYq-39-foA" secondAttribute="bottom" constant="8" symbolic="YES" id="AOF-r6-hnH"/>
+                            <constraint firstItem="Z1u-hz-r1E" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="4" id="MkG-45-7sz"/>
+                            <constraint firstItem="Z1u-hz-r1E" firstAttribute="top" secondItem="y4k-Fy-Nyf" secondAttribute="bottom" constant="27" id="VoT-0z-IBo"/>
+                            <constraint firstItem="Z1u-hz-r1E" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="gaa-Ox-dSU"/>
+                            <constraint firstItem="y4k-Fy-Nyf" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="152" id="gw3-9X-4xQ"/>
+                            <constraint firstItem="KYq-39-foA" firstAttribute="top" secondItem="Z1u-hz-r1E" secondAttribute="bottom" constant="8" symbolic="YES" id="yf8-XB-pmy"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="ASU-hF-XRh"/>

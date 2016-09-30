@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreMotion
+import Goal
 
 class ViewController: UIViewController {
     
@@ -29,6 +30,9 @@ class ViewController: UIViewController {
     @IBOutlet weak var stepsLabel: UILabel!
 //    @IBOutlet weak var isWalking: UILabel!
     @IBOutlet weak var isWalking: UILabel!
+    
+    let not_main_queue = OperationQueue()
+
     
     
     //MARK: View Hierarchy
@@ -55,7 +59,7 @@ class ViewController: UIViewController {
         
         // TODO: should we be doing this from the MAIN queue? You will need to fix that!!!....
         if self.motion.isDeviceMotionAvailable{
-            self.motion.startDeviceMotionUpdates(to: OperationQueue.main, withHandler: self.handleMotion as! CMDeviceMotionHandler)
+            self.motion.startDeviceMotionUpdates(to: not_main_queue, withHandler: self.handleMotion as! CMDeviceMotionHandler)
         }
     }
     
@@ -71,7 +75,7 @@ class ViewController: UIViewController {
         // is activity is available
         if CMMotionActivityManager.isActivityAvailable(){
             // update from this queue (should we use the MAIN queue here??.... )
-            self.activityManager.startActivityUpdates(to: OperationQueue.main, withHandler: self.handleActivity)
+            self.activityManager.startActivityUpdates(to: not_main_queue, withHandler: self.handleActivity)
         }
         
     }
@@ -108,18 +112,18 @@ class ViewController: UIViewController {
         
         //separate out the handler for better readability
         var cal = Calendar.current
-        var comps = cal.dateComponents([.year, .month, .day, .hour, .minute, .second], from: Date())
-        comps.hour = 0
-        comps.minute = 0
-        comps.second = 0
+        var cal_components = cal.dateComponents([.year, .month, .day, .hour, .minute, .second], from: Date())
+        cal_components.hour = 0
+        cal_components.minute = 0
+        cal_components.second = 0
         let timeZone = TimeZone.current
         cal.timeZone = timeZone
         
-        let midnightOfToday = cal.date(from: comps)!
+        let midnight = cal.date(from: cal_components)!
         
         if(CMPedometer.isStepCountingAvailable()){
             
-            self.pedometer.startUpdates(from: midnightOfToday) { (data: CMPedometerData?, error) -> Void in
+            self.pedometer.startUpdates(from: midnight) { (data: CMPedometerData?, error) -> Void in
                 DispatchQueue.main.async(execute: { () -> Void in
                     if(error == nil){
                         print("\(data!.numberOfSteps)")
