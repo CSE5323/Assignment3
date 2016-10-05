@@ -1,146 +1,164 @@
-//
-//  ViewController.swift
-//  Commotion
-//
-//  Created by Eric Larson on 9/6/16.
-//  Copyright © 2016 Eric Larson. All rights reserved.
-//
-
 import UIKit
 import CoreMotion
-import Goal
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UITextFieldDelegate {
     
+    @IBOutlet weak var goalLabel: UILabel!
+    @IBOutlet weak var newGoalField: UITextField!
+    
+    @IBOutlet weak var hitGoalLabel: UILabel!
+    @IBOutlet weak var statusLabel: UILabel!
+    @IBOutlet weak var yesterdayLabel: UILabel!
+    @IBOutlet weak var todayLabel: UILabel!
     //MARK: class variables
     let activityManager = CMMotionActivityManager()
+    let motionQueue = OperationQueue()
+    let goalToolbarSelect: UIToolbar = UIToolbar()
     let pedometer = CMPedometer()
     let motion = CMMotionManager()
-    var totalSteps: Float = 0.0 {
-        willSet(newtotalSteps){
-            DispatchQueue.main.async{
-                self.stepsSlider.setValue(newtotalSteps, animated: true)
-                self.stepsLabel.text = "Steps: \(newtotalSteps)"
-            }
-        }
-    }
     
-    //MARK: UI Elements
-    @IBOutlet weak var stepsSlider: UISlider!
-    @IBOutlet weak var stepsLabel: UILabel!
-//    @IBOutlet weak var isWalking: UILabel!
-    @IBOutlet weak var isWalking: UILabel!
+    lazy var yesterdaySteps: Float = {return 0.0}()
+    lazy var todaySteps: Float = {return 0.0}()
     
-    let not_main_queue = OperationQueue()
-
-    
-    
-    //MARK: View Hierarchy
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
         
-        
-        self.totalSteps = 0.0
+        self.updateYesterdaySteps()
         self.startActivityMonitoring()
         self.startPedometerMonitoring()
-//        self.startMotionUpdates()
+        
+        if UserDefaults.standard.object(forKey: "stepGoal") == nil {
+            UserDefaults.standard.set(100, forKey: "stepGoal")
+            goalLabel.text = "Step Goal: \(100)"
+        } else {
+            let number = UserDefaults.standard.integer(forKey: "stepGoal")
+            goalLabel.text = "Step Goal: \(number)"
+        }
+        
+        self.newGoalField.delegate = self
+        
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(ViewController.dismissKeyboard))
+        view.addGestureRecognizer(tap)
+        
+        goalToolbarSelect.barStyle = UIBarStyle.black
+        goalToolbarSelect.tintColor = UIColor.white
+        goalToolbarSelect.items=[
+            UIBarButtonItem(title: "Cancel", style: UIBarButtonItemStyle.plain, target: self, action: #selector(ViewController.dismissKeyboard)),
+            UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.flexibleSpace, target: self, action: nil),
+            UIBarButtonItem(title: "Set", style: UIBarButtonItemStyle.plain, target: self, action: #selector(ViewController.returnSetGoal))
+        ]
+        goalToolbarSelect.sizeToFit()
+        self.newGoalField.inputAccessoryView = goalToolbarSelect
     }
-
+    
+    func dismissKeyboard() {
+        view.endEditing(true)
+    }
+    
+    func returnSetGoal() {
+        setGoal(self)
+        self.view.endEditing(true)
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        if textField == self.newGoalField {
+            setGoal(self)
+            self.view.endEditing(true)
+        }
+        return true
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
-    
-    // MARK: Raw Motion Functions
-    func startMotionUpdates(){
-        // some internal inconsistency here: we need to ask the device manager for device 
-        
-        // TODO: should we be doing this from the MAIN queue? You will need to fix that!!!....
-        if self.motion.isDeviceMotionAvailable{
-            self.motion.startDeviceMotionUpdates(to: not_main_queue, withHandler: self.handleMotion as! CMDeviceMotionHandler)
-        }
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
     }
     
-    func handleMotion(_ motionData:CMDeviceMotion?, error:NSError?){
-        if let gravity = motionData?.gravity {
-            let rotation = atan2(gravity.x, gravity.y) - M_PI
-            self.isWalking.transform = CGAffineTransform(rotationAngle: CGFloat(rotation))
-        }
+    @IBAction func setGoal(_ sender: AnyObject) {
+        let goal = self.newGoalField.text!
+        let goalNumber = Int(goal)
+        UserDefaults.standard.set(goalNumber!, forKey: "stepGoal")
+        goalLabel.text = "Step Goal: \(goalNumber!)"
+        self.checkHitGoal(goal: goalNumber!)
+        
     }
     
     // MARK: Activity Functions
     func startActivityMonitoring(){
-        // is activity is available
         if CMMotionActivityManager.isActivityAvailable(){
-            // update from this queue (should we use the MAIN queue here??.... )
-            self.activityManager.startActivityUpdates(to: not_main_queue, withHandler: self.handleActivity)
+            self.activityManager.startActivityUpdates(to: motionQueue, withHandler: self.handleActivity)
         }
         
     }
     
-    func handleActivity(_ activity:CMMotionActivity?)->Void{
+    func handleActivity(activity:CMMotionActivity?)->Void{
         // unwrap the activity and disp
         if let unwrappedActivity = activity {
-            DispatchQueue.main.async{
-
-                if(unwrappedActivity.walking){
-                    self.isWalking.text = "Walking"
-                    
-                } else if (unwrappedActivity.running){
-                    self.isWalking.text = "Running"
-                } else if (unwrappedActivity.cycling){
-                    self.isWalking.text = "Cycling"
-                } else if (unwrappedActivity.unknown){
-                    self.isWalking.text = "Unknown"
-                } else if (unwrappedActivity.automotive){
-                    if(unwrappedActivity.stationary){
-                        self.isWalking.text = "Sitting in the Car"
-                    } else {
-                        self.isWalking.text = "Driving"
-                    }
-                } else if (unwrappedActivity.stationary){
-                    self.isWalking.text = "Still"
-                }
+            var activityString = "Status: "
+            switch true{
+            case unwrappedActivity.walking:
+                activityString.append("Walking")
+            case unwrappedActivity.cycling:
+                activityString.append("Cycling")
+            case unwrappedActivity.running:
+                activityString.append("Running")
+            case unwrappedActivity.automotive:
+                activityString.append("Driving")
+            case (unwrappedActivity.stationary && !(unwrappedActivity.automotive)):
+                activityString.append("Stationary")
+            default:
+                activityString.append("Unknown")
+            }
+            DispatchQueue.main.async(){
+                self.statusLabel.text = activityString
             }
         }
     }
     
-    // MARK: Pedometer Functions
     func startPedometerMonitoring(){
-        
-        //separate out the handler for better readability
-        var cal = Calendar.current
-        var cal_components = cal.dateComponents([.year, .month, .day, .hour, .minute, .second], from: Date())
-        cal_components.hour = 0
-        cal_components.minute = 0
-        cal_components.second = 0
-        let timeZone = TimeZone.current
-        cal.timeZone = timeZone
-        
-        let midnight = cal.date(from: cal_components)!
-        
-        if(CMPedometer.isStepCountingAvailable()){
-            
-            self.pedometer.startUpdates(from: midnight) { (data: CMPedometerData?, error) -> Void in
-                DispatchQueue.main.async(execute: { () -> Void in
-                    if(error == nil){
-                        print("\(data!.numberOfSteps)")
-                        self.stepsLabel.text = "\(data!.numberOfSteps)"
-                    }
-                })
-            }
+        if CMPedometer.isStepCountingAvailable(){
+            let calendar = Calendar.current
+            let today = calendar.startOfDay(for: Date())
+            pedometer.startUpdates(from: today, withHandler: self.handlePedometer)
         }
     }
     
-    //ped handler
-    func handlePedometer(_ pedData:CMPedometerData?, error:NSError?){
+    func checkHitGoal(goal:Int){
+        self.hitGoalLabel.text = "Hit Goal: " + (goal <= Int(self.todaySteps) ? "Yes" : "No")
+    }
+    func handlePedometer(pedData:CMPedometerData?, error:Error?){
         if let steps = pedData?.numberOfSteps {
-            self.totalSteps = steps.floatValue
+            self.todaySteps = steps.floatValue
+            DispatchQueue.main.async(){
+                self.todayLabel.text = "\(self.todaySteps)"
+                let goal = UserDefaults.standard.integer(forKey: "stepGoal")
+                print("\(self.todaySteps) - \(Float(goal))")
+                self.checkHitGoal(goal: goal)
+                
+            }
+            
         }
     }
-
-
+    
+    func handleYesterdayPedometer(pedData:CMPedometerData?, error:Error?){
+        if let steps = pedData?.numberOfSteps {
+            self.yesterdaySteps = steps.floatValue
+        }
+        DispatchQueue.main.async(){
+            self.yesterdayLabel.text = "\(self.yesterdaySteps)"
+        }
+    }
+    
+    func updateYesterdaySteps(){
+        let calendar = Calendar.current
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: calendar.startOfDay(for: Date()))
+        let today = calendar.startOfDay(for: Date())
+        self.pedometer.queryPedometerData(from: yesterday!, to: today, withHandler: self.handleYesterdayPedometer)
+    }
+    
+    
 }
 
